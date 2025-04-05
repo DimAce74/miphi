@@ -1,0 +1,510 @@
+Script started on 2025-03-23 11:10:39+00:00 [TERM="xterm-256color" TTY="/dev/pts/0" COLUMNS="120" LINES="30"]
+[?2004h]0;vagrant@ubuntu-jammy: ~[01;32mvagrant@ubuntu-jammy[00m:[01;34m~[00m$ [7mls -l /dev/sda{,[123]}[27mls -l /dev/sda{,[123]}
+[?2004lbrw-rw---- 1 root disk 8, 0 Mar 17 18:18 [0m[40;33;01m/dev/sda[0m
+brw-rw---- 1 root disk 8, 1 Mar 17 18:17 [40;33;01m/dev/sda1[0m
+[?2004h]0;vagrant@ubuntu-jammy: ~[01;32mvagrant@ubuntu-jammy[00m:[01;34m~[00m$ [7mlsblk --list[27mlsblk --list
+[?2004lNAME  MAJ:MIN RM  SIZE RO TYPE MOUNTPOINTS
+loop0   7:0    0 63.7M  1 loop /snap/core20/2434
+loop1   7:1    0 89.4M  1 loop /snap/lxd/31333
+loop2   7:2    0 44.4M  1 loop /snap/snapd/23545
+loop3   7:3    0 63.7M  1 loop /snap/core20/2496
+loop4   7:4    0 44.4M  1 loop /snap/snapd/23771
+sda     8:0    0   40G  0 disk 
+sda1    8:1    0   40G  0 part /
+sdb     8:16   0   10M  0 disk 
+[?2004h]0;vagrant@ubuntu-jammy: ~[01;32mvagrant@ubuntu-jammy[00m:[01;34m~[00m$ [7mcat /proc/diskstats[27mcat /proc/diskstats
+[?2004l   7       0 loop0 275 0 5144 220 0 0 0 0 0 540 220 0 0 0 0 0 0
+   7       1 loop1 82 0 2538 81 0 0 0 0 0 180 81 0 0 0 0 0 0
+   7       2 loop2 785 0 59520 693 0 0 0 0 0 3276 693 0 0 0 0 0 0
+   7       3 loop3 35 0 114 13 0 0 0 0 0 44 13 0 0 0 0 0 0
+   7       4 loop4 354 0 24572 39 0 0 0 0 0 808 39 0 0 0 0 0 0
+   7       5 loop5 21 0 48 5 0 0 0 0 0 28 5 0 0 0 0 0 0
+   7       6 loop6 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+   7       7 loop7 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+   8       0 sda 14173 3911 965579 15171 38290 45146 6103880 219739 0 77480 234911 0 0 0 0 0 0
+   8       1 sda1 13798 3911 953629 14872 38289 45146 6103872 219739 0 77212 234612 0 0 0 0 0 0
+   8      16 sdb 368 0 6639 269 0 0 0 0 0 396 269 0 0 0 0 0 0
+[?2004h]0;vagrant@ubuntu-jammy: ~[01;32mvagrant@ubuntu-jammy[00m:[01;34m~[00m$ cat /proc/diskstats[7Plsblk --list | cut -fq,f2[1P,f21,f2
+[?2004lcut: invalid field value ‘f2’
+Try 'cut --help' for more information.
+[?2004h]0;vagrant@ubuntu-jammy: ~[01;32mvagrant@ubuntu-jammy[00m:[01;34m~[00m$ lsblk --list | cut -f1,f2[C-f1,f2d-f1,f2 -f1,f2
+[?2004lcut: the delimiter must be a single character
+Try 'cut --help' for more information.
+[?2004h]0;vagrant@ubuntu-jammy: ~[01;32mvagrant@ubuntu-jammy[00m:[01;34m~[00m$ lsblk --list | cut -d -f1,f2[C' -f1,f2' -f1,f2[1@ 
+[?2004lcut: invalid field value ‘f2’
+Try 'cut --help' for more information.
+[?2004h]0;vagrant@ubuntu-jammy: ~[01;32mvagrant@ubuntu-jammy[00m:[01;34m~[00m$ cut --help
+[?2004lUsage: cut OPTION... [FILE]...
+Print selected parts of lines from each FILE to standard output.
+
+With no FILE, or when FILE is -, read standard input.
+
+Mandatory arguments to long options are mandatory for short options too.
+  -b, --bytes=LIST        select only these bytes
+  -c, --characters=LIST   select only these characters
+  -d, --delimiter=DELIM   use DELIM instead of TAB for field delimiter
+  -f, --fields=LIST       select only these fields;  also print any line
+                            that contains no delimiter character, unless
+                            the -s option is specified
+  -n                      (ignored)
+      --complement        complement the set of selected bytes, characters
+                            or fields
+  -s, --only-delimited    do not print lines not containing delimiters
+      --output-delimiter=STRING  use STRING as the output delimiter
+                            the default is to use the input delimiter
+  -z, --zero-terminated    line delimiter is NUL, not newline
+      --help     display this help and exit
+      --version  output version information and exit
+
+Use one, and only one of -b, -c or -f.  Each LIST is made up of one
+range, or many ranges separated by commas.  Selected input is written
+in the same order that it is read, and is written exactly once.
+Each range is one of:
+
+  N     N'th byte, character or field, counted from 1
+  N-    from N'th byte, character or field, to end of line
+  N-M   from N'th to M'th (included) byte, character or field
+  -M    from first to M'th (included) byte, character or field
+
+GNU coreutils online help: <https://www.gnu.org/software/coreutils/>
+Report any translation bugs to <https://translationproject.org/team/>
+Full documentation <https://www.gnu.org/software/coreutils/cut>
+or available locally via: info '(coreutils) cut invocation'
+[?2004h]0;vagrant@ubuntu-jammy: ~[01;32mvagrant@ubuntu-jammy[00m:[01;34m~[00m$ cut --helplsblk --list | cut -d' ' -f1,f2-f1,f2[Ci1,f2e1,f2l1,f2d1,f2s1,f2=1,f2[C[C[1P2
+[?2004lNAME 
+loop0 
+loop1 
+loop2 
+loop3 
+loop4 
+sda 
+sda1 
+sdb 
+[?2004h]0;vagrant@ubuntu-jammy: ~[01;32mvagrant@ubuntu-jammy[00m:[01;34m~[00m$ lsblk --list | cut -d' ' --fields=1,2[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Ccut --help[Klsblk --list | cut -d' ' -f1,f2[C[Ccut --help[Klsblk --list | cut -d' ' --fields=1,2[C[1P--fields=1,2[1P--fields=1,2[1P--fields=1,2[1P--fields=1,2[1P--fields=1,2[C[1Pfields=1,2
+[?2004lNAME  MAJ:MIN RM  SIZE RO TYPE MOUNTPOINTS
+loop0   7:0    0 63.7M  1 loop /snap/core20/2434
+loop1   7:1    0 89.4M  1 loop /snap/lxd/31333
+loop2   7:2    0 44.4M  1 loop /snap/snapd/23545
+loop3   7:3    0 63.7M  1 loop /snap/core20/2496
+loop4   7:4    0 44.4M  1 loop /snap/snapd/23771
+sda     8:0    0   40G  0 disk 
+sda1    8:1    0   40G  0 part /
+sdb     8:16   0   10M  0 disk 
+[?2004h]0;vagrant@ubuntu-jammy: ~[01;32mvagrant@ubuntu-jammy[00m:[01;34m~[00m$ lsblk --list | cut --fields=1,2f1,2[C[Cf2
+[?2004lcut: invalid field value ‘f1,f2’
+Try 'cut --help' for more information.
+[?2004h]0;vagrant@ubuntu-jammy: ~[01;32mvagrant@ubuntu-jammy[00m:[01;34m~[00m$ lsblk --list | cut --fields=f1,f2[2P1,2d' ' --fields=1,2[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Ccut --help[K
+[?2004lUsage: cut OPTION... [FILE]...
+Print selected parts of lines from each FILE to standard output.
+
+With no FILE, or when FILE is -, read standard input.
+
+Mandatory arguments to long options are mandatory for short options too.
+  -b, --bytes=LIST        select only these bytes
+  -c, --characters=LIST   select only these characters
+  -d, --delimiter=DELIM   use DELIM instead of TAB for field delimiter
+  -f, --fields=LIST       select only these fields;  also print any line
+                            that contains no delimiter character, unless
+                            the -s option is specified
+  -n                      (ignored)
+      --complement        complement the set of selected bytes, characters
+                            or fields
+  -s, --only-delimited    do not print lines not containing delimiters
+      --output-delimiter=STRING  use STRING as the output delimiter
+                            the default is to use the input delimiter
+  -z, --zero-terminated    line delimiter is NUL, not newline
+      --help     display this help and exit
+      --version  output version information and exit
+
+Use one, and only one of -b, -c or -f.  Each LIST is made up of one
+range, or many ranges separated by commas.  Selected input is written
+in the same order that it is read, and is written exactly once.
+Each range is one of:
+
+  N     N'th byte, character or field, counted from 1
+  N-    from N'th byte, character or field, to end of line
+  N-M   from N'th to M'th (included) byte, character or field
+  -M    from first to M'th (included) byte, character or field
+
+GNU coreutils online help: <https://www.gnu.org/software/coreutils/>
+Report any translation bugs to <https://translationproject.org/team/>
+Full documentation <https://www.gnu.org/software/coreutils/cut>
+or available locally via: info '(coreutils) cut invocation'
+[?2004h]0;vagrant@ubuntu-jammy: ~[01;32mvagrant@ubuntu-jammy[00m:[01;34m~[00m$ cut --helplsblk --list | cut --fields=f1,f2[1P1,f2[C[C[1P2[1,2[C[C[C]
+[?2004lcut: invalid field value ‘[1,2]’
+Try 'cut --help' for more information.
+[?2004h]0;vagrant@ubuntu-jammy: ~[01;32mvagrant@ubuntu-jammy[00m:[01;34m~[00m$ lsblk --list | cut --fields=[1,2][1P1,2][C[C[C[K
+[?2004lNAME  MAJ:MIN RM  SIZE RO TYPE MOUNTPOINTS
+loop0   7:0    0 63.7M  1 loop /snap/core20/2434
+loop1   7:1    0 89.4M  1 loop /snap/lxd/31333
+loop2   7:2    0 44.4M  1 loop /snap/snapd/23545
+loop3   7:3    0 63.7M  1 loop /snap/core20/2496
+loop4   7:4    0 44.4M  1 loop /snap/snapd/23771
+sda     8:0    0   40G  0 disk 
+sda1    8:1    0   40G  0 part /
+sdb     8:16   0   10M  0 disk 
+[?2004h]0;vagrant@ubuntu-jammy: ~[01;32mvagrant@ubuntu-jammy[00m:[01;34m~[00m$ lsblk --list | cut --fields=1,2[1P2[K
+[?2004lNAME  MAJ:MIN RM  SIZE RO TYPE MOUNTPOINTS
+loop0   7:0    0 63.7M  1 loop /snap/core20/2434
+loop1   7:1    0 89.4M  1 loop /snap/lxd/31333
+loop2   7:2    0 44.4M  1 loop /snap/snapd/23545
+loop3   7:3    0 63.7M  1 loop /snap/core20/2496
+loop4   7:4    0 44.4M  1 loop /snap/snapd/23771
+sda     8:0    0   40G  0 disk 
+sda1    8:1    0   40G  0 part /
+sdb     8:16   0   10M  0 disk 
+[?2004h]0;vagrant@ubuntu-jammy: ~[01;32mvagrant@ubuntu-jammy[00m:[01;34m~[00m$ lsblk --list | cut --fields=1[C --fields=1- --fields=1d --fields=1; --fields=1[1P --fields=1' --fields=1' --fields=1[1@ 
+[?2004lNAME
+loop0
+loop1
+loop2
+loop3
+loop4
+sda
+sda1
+sdb
+[?2004h]0;vagrant@ubuntu-jammy: ~[01;32mvagrant@ubuntu-jammy[00m:[01;34m~[00m$ lsblk --list | cut -d' ' --fields=1[C.2[1P2,2
+[?2004lNAME 
+loop0 
+loop1 
+loop2 
+loop3 
+loop4 
+sda 
+sda1 
+sdb 
+[?2004h]0;vagrant@ubuntu-jammy: ~[01;32mvagrant@ubuntu-jammy[00m:[01;34m~[00m$ lsblk --list | cut -d' ' --fields=1,2[1P,2[1P2
+[?2004l
+
+
+
+
+
+
+
+
+[?2004h]0;vagrant@ubuntu-jammy: ~[01;32mvagrant@ubuntu-jammy[00m:[01;34m~[00m$ lsblk --list | cut -d' ' --fields=2[K3
+[?2004lMAJ:MIN
+
+
+
+
+
+
+
+
+[?2004h]0;vagrant@ubuntu-jammy: ~[01;32mvagrant@ubuntu-jammy[00m:[01;34m~[00m$ lsblk --list | cut -d' ' --fields=3[1@ 
+[?2004lcut: the delimiter must be a single character
+Try 'cut --help' for more information.
+[?2004h]0;vagrant@ubuntu-jammy: ~[01;32mvagrant@ubuntu-jammy[00m:[01;34m~[00m$ lsblk --list | cut -d'  ' --fields=3[1P[1P[1@\[1@t
+[?2004lcut: the delimiter must be a single character
+Try 'cut --help' for more information.
+[?2004h]0;vagrant@ubuntu-jammy: ~[01;32mvagrant@ubuntu-jammy[00m:[01;34m~[00m$ lsblk --list | cut -d'\t' --fields=3[C[1P --fields=3[1P --fields=3[1P --fields=3[1P --fields=3[1P --fields=3[1P --fields=3[1P--fields=3
+[?2004lNAME  MAJ:MIN RM  SIZE RO TYPE MOUNTPOINTS
+loop0   7:0    0 63.7M  1 loop /snap/core20/2434
+loop1   7:1    0 89.4M  1 loop /snap/lxd/31333
+loop2   7:2    0 44.4M  1 loop /snap/snapd/23545
+loop3   7:3    0 63.7M  1 loop /snap/core20/2496
+loop4   7:4    0 44.4M  1 loop /snap/snapd/23771
+sda     8:0    0   40G  0 disk 
+sda1    8:1    0   40G  0 part /
+sdb     8:16   0   10M  0 disk 
+[?2004h]0;vagrant@ubuntu-jammy: ~[01;32mvagrant@ubuntu-jammy[00m:[01;34m~[00m$ lsblk --list | cut --fields=3[K[K[K[K[K[K[K[K[K[K[K[K[K[Kgreo[Kp NAME
+[?2004l[01;31m[KNAME[m[K  MAJ:MIN RM  SIZE RO TYPE MOUNTPOINTS
+[?2004h]0;vagrant@ubuntu-jammy: ~[01;32mvagrant@ubuntu-jammy[00m:[01;34m~[00m$ lsblk --list | grep NAME[C[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[7mlsblk --list | awk '{print $1, $2}'[27m[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Clsblk --list | awk '{print $1, $2}'
+[?2004lNAME MAJ:MIN
+loop0 7:0
+loop1 7:1
+loop2 7:2
+loop3 7:3
+loop4 7:4
+sda 8:0
+sda1 8:1
+sdb 8:16
+[?2004h]0;vagrant@ubuntu-jammy: ~[01;32mvagrant@ubuntu-jammy[00m:[01;34m~[00m$ [7mcat /proc/devices[27mcat /proc/devices
+[?2004lCharacter devices:
+  1 mem
+  4 /dev/vc/0
+  4 tty
+  4 ttyS
+  5 /dev/tty
+  5 /dev/console
+  5 /dev/ptmx
+  5 ttyprintk
+  7 vcs
+ 10 misc
+ 13 input
+ 21 sg
+ 29 fb
+ 89 i2c
+108 ppp
+128 ptm
+136 pts
+180 usb
+189 usb_device
+204 ttyMAX
+226 drm
+239 aux
+240 cec
+241 lirc
+242 vfio
+243 bsg
+244 watchdog
+245 remoteproc
+246 ptp
+247 pps
+248 rtc
+249 dma_heap
+250 dax
+251 dimmctl
+252 ndctl
+253 tpm
+254 gpiochip
+
+Block devices:
+  7 loop
+  8 sd
+  9 md
+ 11 sr
+ 65 sd
+ 66 sd
+ 67 sd
+ 68 sd
+ 69 sd
+ 70 sd
+ 71 sd
+128 sd
+129 sd
+130 sd
+131 sd
+132 sd
+133 sd
+134 sd
+135 sd
+253 device-mapper
+254 mdp
+259 blkext
+[?2004h]0;vagrant@ubuntu-jammy: ~[01;32mvagrant@ubuntu-jammy[00m:[01;34m~[00m$ cat /proc/devices | grep 8
+[?2004l [01;31m[K8[m[K9 i2c
+10[01;31m[K8[m[K ppp
+12[01;31m[K8[m[K ptm
+1[01;31m[K8[m[K0 usb
+1[01;31m[K8[m[K9 usb_device
+24[01;31m[K8[m[K rtc
+  [01;31m[K8[m[K sd
+ 6[01;31m[K8[m[K sd
+12[01;31m[K8[m[K sd
+[?2004h]0;vagrant@ubuntu-jammy: ~[01;32mvagrant@ubuntu-jammy[00m:[01;34m~[00m$ cat /proc/devices | grep 8[Ksd
+[?2004l  8 [01;31m[Ksd[m[K
+ 65 [01;31m[Ksd[m[K
+ 66 [01;31m[Ksd[m[K
+ 67 [01;31m[Ksd[m[K
+ 68 [01;31m[Ksd[m[K
+ 69 [01;31m[Ksd[m[K
+ 70 [01;31m[Ksd[m[K
+ 71 [01;31m[Ksd[m[K
+128 [01;31m[Ksd[m[K
+129 [01;31m[Ksd[m[K
+130 [01;31m[Ksd[m[K
+131 [01;31m[Ksd[m[K
+132 [01;31m[Ksd[m[K
+133 [01;31m[Ksd[m[K
+134 [01;31m[Ksd[m[K
+135 [01;31m[Ksd[m[K
+[?2004h]0;vagrant@ubuntu-jammy: ~[01;32mvagrant@ubuntu-jammy[00m:[01;34m~[00m$ [7mdd if=/dev/zero of=./fs.img bs=1M count=10[27m[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Cdd if=/dev/zero of=./fs.img bs=1M count=10
+[?2004l10+0 records in
+10+0 records out
+10485760 bytes (10 MB, 10 MiB) copied, 0.0196754 s, 533 MB/s
+[?2004h]0;vagrant@ubuntu-jammy: ~[01;32mvagrant@ubuntu-jammy[00m:[01;34m~[00m$ [7mlosetup --find --show ./fs.img[27m[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Closetup --find --show ./fs.img
+[?2004llosetup: ./fs.img: failed to set up loop device: Permission denied
+[?2004h]0;vagrant@ubuntu-jammy: ~[01;32mvagrant@ubuntu-jammy[00m:[01;34m~[00m$ losetup --find --show ./fs.img[1@s[1@u[1@d[1@o[1@ 
+[?2004l/dev/loop5
+[?2004h]0;vagrant@ubuntu-jammy: ~[01;32mvagrant@ubuntu-jammy[00m:[01;34m~[00m$ sudo losetup --find --show ./fs.img[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[5P[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[Klist
+[?2004lNAME       SIZELIMIT OFFSET AUTOCLEAR RO BACK-FILE                             DIO LOG-SEC
+/dev/loop1         0      0         1  1 /var/lib/snapd/snaps/lxd_31333.snap     0     512
+/dev/loop4         0      0         1  1 /var/lib/snapd/snaps/snapd_23771.snap   0     512
+/dev/loop2         0      0         1  1 /var/lib/snapd/snaps/snapd_23545.snap   0     512
+/dev/loop0         0      0         1  1 /var/lib/snapd/snaps/core20_2434.snap   0     512
+/dev/loop5         0      0         0  0 /home/vagrant/fs.img                    0     512
+/dev/loop3         0      0         1  1 /var/lib/snapd/snaps/core20_2496.snap   0     512
+[?2004h]0;vagrant@ubuntu-jammy: ~[01;32mvagrant@ubuntu-jammy[00m:[01;34m~[00m$ [7mmkfs -t ext4 /dev/loop5[27mmkfs -t ext4 /dev/loop5
+[?2004lmke2fs 1.46.5 (30-Dec-2021)
+mkfs.ext4: Permission denied while trying to determine filesystem size
+[?2004h]0;vagrant@ubuntu-jammy: ~[01;32mvagrant@ubuntu-jammy[00m:[01;34m~[00m$ mkfs -t ext4 /dev/loop5[1@s[1@u[1@d[1@o[1@ 
+[?2004lmke2fs 1.46.5 (30-Dec-2021)
+Discarding device blocks:    0/2560         done                            
+Creating filesystem with 2560 4k blocks and 2560 inodes
+
+Allocating group tables: 0/1   done                            
+Writing inode tables: 0/1   done                            
+Creating journal (1024 blocks): done
+Writing superblocks and filesystem accounting information: 0/1   done
+
+[?2004h]0;vagrant@ubuntu-jammy: ~[01;32mvagrant@ubuntu-jammy[00m:[01;34m~[00m$ sudo mkfs -t ext4 /dev/loop5[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[5P[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[9Plosetup --list
+[?2004lNAME       SIZELIMIT OFFSET AUTOCLEAR RO BACK-FILE                             DIO LOG-SEC
+/dev/loop1         0      0         1  1 /var/lib/snapd/snaps/lxd_31333.snap     0     512
+/dev/loop4         0      0         1  1 /var/lib/snapd/snaps/snapd_23771.snap   0     512
+/dev/loop2         0      0         1  1 /var/lib/snapd/snaps/snapd_23545.snap   0     512
+/dev/loop0         0      0         1  1 /var/lib/snapd/snaps/core20_2434.snap   0     512
+/dev/loop5         0      0         0  0 /home/vagrant/fs.img                    0     512
+/dev/loop3         0      0         1  1 /var/lib/snapd/snaps/core20_2496.snap   0     512
+[?2004h]0;vagrant@ubuntu-jammy: ~[01;32mvagrant@ubuntu-jammy[00m:[01;34m~[00m$ [7mlsblk --list[27mlsblk --list
+[?2004lNAME  MAJ:MIN RM  SIZE RO TYPE MOUNTPOINTS
+loop0   7:0    0 63.7M  1 loop /snap/core20/2434
+loop1   7:1    0 89.4M  1 loop /snap/lxd/31333
+loop2   7:2    0 44.4M  1 loop /snap/snapd/23545
+loop3   7:3    0 63.7M  1 loop /snap/core20/2496
+loop4   7:4    0 44.4M  1 loop /snap/snapd/23771
+loop5   7:5    0   10M  0 loop 
+sda     8:0    0   40G  0 disk 
+sda1    8:1    0   40G  0 part /
+sdb     8:16   0   10M  0 disk 
+[?2004h]0;vagrant@ubuntu-jammy: ~[01;32mvagrant@ubuntu-jammy[00m:[01;34m~[00m$ [7mblkid /dev/loop5[27m[21@blkid /dev/loop5[7mtune2fs -l[27m[C[C[C[C[C[C[C[C[C[C[C[1Ptune2fs -l /dev/loop[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[7mtune2fs -l /dev/loop5[27mtune2fs -l /dev/loop5
+[?2004ltune2fs 1.46.5 (30-Dec-2021)
+tune2fs: Permission denied while trying to open /dev/loop5
+Couldn't find valid filesystem superblock.
+[?2004h]0;vagrant@ubuntu-jammy: ~[01;32mvagrant@ubuntu-jammy[00m:[01;34m~[00m$ sudo [7mtune2fs -l /dev/loop5[27mtune2fs -l /dev/loop5
+[?2004ltune2fs 1.46.5 (30-Dec-2021)
+Filesystem volume name:   <none>
+Last mounted on:          <not available>
+Filesystem UUID:          73cc5813-4630-4716-a625-6bc3db59c091
+Filesystem magic number:  0xEF53
+Filesystem revision #:    1 (dynamic)
+Filesystem features:      has_journal ext_attr resize_inode dir_index filetype extent 64bit flex_bg sparse_super large_file huge_file dir_nlink extra_isize metadata_csum
+Filesystem flags:         signed_directory_hash 
+Default mount options:    user_xattr acl
+Filesystem state:         clean
+Errors behavior:          Continue
+Filesystem OS type:       Linux
+Inode count:              2560
+Block count:              2560
+Reserved block count:     128
+Overhead clusters:        1189
+Free blocks:              1365
+Free inodes:              2549
+First block:              0
+Block size:               4096
+Fragment size:            4096
+Group descriptor size:    64
+Reserved GDT blocks:      1
+Blocks per group:         32768
+Fragments per group:      32768
+Inodes per group:         2560
+Inode blocks per group:   160
+Flex block group size:    16
+Filesystem created:       Sun Mar 23 11:30:27 2025
+Last mount time:          n/a
+Last write time:          Sun Mar 23 11:30:27 2025
+Mount count:              0
+Maximum mount count:      -1
+Last checked:             Sun Mar 23 11:30:27 2025
+Check interval:           0 (<none>)
+Lifetime writes:          17 kB
+Reserved blocks uid:      0 (user root)
+Reserved blocks gid:      0 (group root)
+First inode:              11
+Inode size:	          256
+Required extra isize:     32
+Desired extra isize:      32
+Journal inode:            8
+Default directory hash:   half_md4
+Directory Hash Seed:      0325f2ec-9cee-4318-9578-0174ef40771d
+Journal backup:           inode blocks
+Checksum type:            crc32c
+Checksum:                 0x21c8d2da
+[?2004h]0;vagrant@ubuntu-jammy: ~[01;32mvagrant@ubuntu-jammy[00m:[01;34m~[00m$ sudo tune2fs -l /dev/loop5 | grep [7mBlock size[27mBlock size
+[?2004lgrep: size: No such file or directory
+[?2004h]0;vagrant@ubuntu-jammy: ~[01;32mvagrant@ubuntu-jammy[00m:[01;34m~[00m$ sudo tune2fs -l /dev/loop5 | grep Block size[C[1@'[C[C[C[C[C[C[C[C[C[C'
+[?2004l[01;31m[KBlock size[m[K:               4096
+[?2004h]0;vagrant@ubuntu-jammy: ~[01;32mvagrant@ubuntu-jammy[00m:[01;34m~[00m$ sudo tune2fs -l /dev/loop5 | grep 'Block size'[1P'[1P'[1P'[1P'[1P'[1P'[1P'[1P'[1P'[1P'[7mInode count:[27m'Inode count:'
+[?2004l[01;31m[KInode count:[m[K              2560
+[?2004h]0;vagrant@ubuntu-jammy: ~[01;32mvagrant@ubuntu-jammy[00m:[01;34m~[00m$ sudo tune2fs -l /dev/loop5 | grep 'Inode count:'[C[C[C[C[C[C[C[1P'[1P'[1P'[1P'[1P'[1P'[1P'[1P'[1P'[1P'[1P'[1P'[7mBlock count:[27m'Block count:'
+[?2004l[01;31m[KBlock count:[m[K              2560
+[?2004h]0;vagrant@ubuntu-jammy: ~[01;32mvagrant@ubuntu-jammy[00m:[01;34m~[00m$ [7mblkid /dev/loop5[27mblkid /dev/loop5
+[?2004l[?2004h]0;vagrant@ubuntu-jammy: ~[01;32mvagrant@ubuntu-jammy[00m:[01;34m~[00m$ sudo [7mblkid /dev/loop5[27mblkid /dev/loop5
+[?2004l/dev/loop5: UUID="73cc5813-4630-4716-a625-6bc3db59c091" BLOCK_SIZE="4096" TYPE="ext4"
+[?2004h]0;vagrant@ubuntu-jammy: ~[01;32mvagrant@ubuntu-jammy[00m:[01;34m~[00m$ sudo [7mmount /dev/loop5 /mnt[27mmount /dev/loop5 /mnt
+[?2004l[?2004h]0;vagrant@ubuntu-jammy: ~[01;32mvagrant@ubuntu-jammy[00m:[01;34m~[00m$ sudo mount | grep /mnt
+[?2004l/dev/loop5 on [01;31m[K/mnt[m[K type ext4 (rw,relatime)
+[?2004h]0;vagrant@ubuntu-jammy: ~[01;32mvagrant@ubuntu-jammy[00m:[01;34m~[00m$ df -h /mnt
+[?2004lFilesystem      Size  Used Avail Use% Mounted on
+/dev/loop5      5.4M   24K  4.7M   1% /mnt
+[?2004h]0;vagrant@ubuntu-jammy: ~[01;32mvagrant@ubuntu-jammy[00m:[01;34m~[00m$ df -h /mnti /mnt
+[?2004lFilesystem     Inodes IUsed IFree IUse% Mounted on
+/dev/loop5       2.5K    11  2.5K    1% /mnt
+[?2004h]0;vagrant@ubuntu-jammy: ~[01;32mvagrant@ubuntu-jammy[00m:[01;34m~[00m$ [7mumount /dev/loop5[27mumount /dev/loop5[1@s[C[1@u[1@d[1@o[1@ 
+[?2004l[?2004h]0;vagrant@ubuntu-jammy: ~[01;32mvagrant@ubuntu-jammy[00m:[01;34m~[00m$ [7mtune2fs -l /dev/loop5[27mtune2fs -l /dev/loop5
+[?2004ltune2fs 1.46.5 (30-Dec-2021)
+tune2fs: Permission denied while trying to open /dev/loop5
+Couldn't find valid filesystem superblock.
+[?2004h]0;vagrant@ubuntu-jammy: ~[01;32mvagrant@ubuntu-jammy[00m:[01;34m~[00m$ tune2fs -l /dev/loop5[1@s[1@u[1@d[1@o[1@ 
+[?2004ltune2fs 1.46.5 (30-Dec-2021)
+Filesystem volume name:   <none>
+Last mounted on:          <not available>
+Filesystem UUID:          73cc5813-4630-4716-a625-6bc3db59c091
+Filesystem magic number:  0xEF53
+Filesystem revision #:    1 (dynamic)
+Filesystem features:      has_journal ext_attr resize_inode dir_index filetype extent 64bit flex_bg sparse_super large_file huge_file dir_nlink extra_isize metadata_csum
+Filesystem flags:         signed_directory_hash 
+Default mount options:    user_xattr acl
+Filesystem state:         clean
+Errors behavior:          Continue
+Filesystem OS type:       Linux
+Inode count:              2560
+Block count:              2560
+Reserved block count:     128
+Overhead clusters:        1189
+Free blocks:              1365
+Free inodes:              2549
+First block:              0
+Block size:               4096
+Fragment size:            4096
+Group descriptor size:    64
+Reserved GDT blocks:      1
+Blocks per group:         32768
+Fragments per group:      32768
+Inodes per group:         2560
+Inode blocks per group:   160
+Flex block group size:    16
+Filesystem created:       Sun Mar 23 11:30:27 2025
+Last mount time:          Sun Mar 23 11:38:32 2025
+Last write time:          Sun Mar 23 11:39:44 2025
+Mount count:              1
+Maximum mount count:      -1
+Last checked:             Sun Mar 23 11:30:27 2025
+Check interval:           0 (<none>)
+Lifetime writes:          685 kB
+Reserved blocks uid:      0 (user root)
+Reserved blocks gid:      0 (group root)
+First inode:              11
+Inode size:	          256
+Required extra isize:     32
+Desired extra isize:      32
+Journal inode:            8
+Default directory hash:   half_md4
+Directory Hash Seed:      0325f2ec-9cee-4318-9578-0174ef40771d
+Journal backup:           inode blocks
+Checksum type:            crc32c
+Checksum:                 0x2b9d0bab
+[?2004h]0;vagrant@ubuntu-jammy: ~[01;32mvagrant@ubuntu-jammy[00m:[01;34m~[00m$ sudo tune2fs -l /dev/loop5[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[5P[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[1@sudo umount[C[C[C[C[C[C[C[C[C[C[C[11Pdf -hi /mnt[1P /mnt[12@sudo mount | grep[C[C[C[C[C[4@/dev/loop5[C[C[C[C[C[5Pblkid /dev/loop5[5P[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Csudo tune2fs -l /dev/loop5 | grep 'Block count:'1[K[1P'[1P'[1P'[1P'[1P'[1P'[1P'[1P'[1P'[1P'[1P'[1P'[7mFree blocks[27m'Free blocks'
+[?2004l[01;31m[KFree blocks[m[K:              1365
+[?2004h]0;vagrant@ubuntu-jammy: ~[01;32mvagrant@ubuntu-jammy[00m:[01;34m~[00m$ sudo tune2fs -l /dev/loop5 | grep 'Free blocks'[1P'[1P'[1P'[1P'[1P'[1P'[1P'[1P'[1P'[1P'[1P'[7mFree inodes[27m'Free inodes'
+[?2004l[01;31m[KFree inodes[m[K:              2549
+[?2004h]0;vagrant@ubuntu-jammy: ~[01;32mvagrant@ubuntu-jammy[00m:[01;34m~[00m$ sudo tune2fs -l /dev/loop5 | grep 'Free inodes'[1P'[1P'[1P'[1P'[1P'[1P'[1P'[1P'[1P'[1P'[1P'[7mMount count[27m'Mount count'
+[?2004l[01;31m[KMount count[m[K:              1
+[?2004h]0;vagrant@ubuntu-jammy: ~[01;32mvagrant@ubuntu-jammy[00m:[01;34m~[00m$ sudo tune2fs -l /dev/loop5 | grep 'Mount count'[1P'[1P'[1P'[1P'[1P'[1P'[1P'[1P'[1P'[1P'[1P'[7mLast mounted on[27m'Last mounted on'
+[?2004l[01;31m[KLast mounted on[m[K:          <not available>
+[?2004h]0;vagrant@ubuntu-jammy: ~[01;32mvagrant@ubuntu-jammy[00m:[01;34m~[00m$ [7mlosetup --detach /dev/loop5[27m[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Closetup --detach /dev/loop5
+[?2004llosetup: /dev/loop5: detach failed: Permission denied
+[?2004h]0;vagrant@ubuntu-jammy: ~[01;32mvagrant@ubuntu-jammy[00m:[01;34m~[00m$ losetup --detach /dev/loop5[1@s[1@u[1@d[1@o[1@ 
+[?2004l[?2004h]0;vagrant@ubuntu-jammy: ~[01;32mvagrant@ubuntu-jammy[00m:[01;34m~[00m$ sudo losetup --detach /dev/loop5[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[Klist
+[?2004lNAME       SIZELIMIT OFFSET AUTOCLEAR RO BACK-FILE                             DIO LOG-SEC
+/dev/loop1         0      0         1  1 /var/lib/snapd/snaps/lxd_31333.snap     0     512
+/dev/loop4         0      0         1  1 /var/lib/snapd/snaps/snapd_23771.snap   0     512
+/dev/loop2         0      0         1  1 /var/lib/snapd/snaps/snapd_23545.snap   0     512
+/dev/loop0         0      0         1  1 /var/lib/snapd/snaps/core20_2434.snap   0     512
+/dev/loop3         0      0         1  1 /var/lib/snapd/snaps/core20_2496.snap   0     512
+[?2004h]0;vagrant@ubuntu-jammy: ~[01;32mvagrant@ubuntu-jammy[00m:[01;34m~[00m$ exit
+[?2004lexit
+
+Script done on 2025-03-23 11:43:18+00:00 [COMMAND_EXIT_CODE="0"]

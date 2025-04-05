@@ -1,0 +1,10 @@
+#!/bin/bash
+
+read -p "Who are you?" user
+
+if [ "$user" = "Adam Bond" ]
+then
+	echo "Access Granted"
+else
+	echo "You looooser!!!"
+fi

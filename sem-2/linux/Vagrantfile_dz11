@@ -1,0 +1,201 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+  # Общие настройки для всех машин
+  config.vm.box = "ubuntu/jammy64"
+  config.vm.synced_folder ".", "/vagrant", disabled: true
+  config.vm.synced_folder ".", "/share"
+
+  # Общая приватная сеть
+  nodes = {
+    "vm1" => "192.168.56.10",
+    "vm2" => "192.168.56.11",
+    "vm3" => "192.168.56.12"
+  }
+
+  # Общие provisioners для всех машин
+  config.vm.provision "shell" do |s| 
+	s.inline = <<-SHELL
+	  # Обновление пакетов
+	  apt-get update -y && apt-get upgrade -y
+
+	  # Настройка SSH сервера
+	  sed -i 's/^#*Protocol.*/Protocol 2/' /etc/ssh/sshd_config
+	  sed -i 's/^#*LoginGraceTime.*/LoginGraceTime 10s/' /etc/ssh/sshd_config
+	  sed -i 's/^#*MaxAuthTries.*/MaxAuthTries 2/' /etc/ssh/sshd_config
+	  sed -i 's/^#*MaxSessions.*/MaxSessions 2/' /etc/ssh/sshd_config
+	  sed -i 's/^#*PermitEmptyPasswords.*/PermitEmptyPasswords no/' /etc/ssh/sshd_config
+	  sed -i 's/^#*HostbasedAuthentication.*/HostbasedAuthentication no/' /etc/ssh/sshd_config
+	  sed -i 's/^#*PasswordAuthentication.*/PasswordAuthentication no/' /etc/ssh/sshd_config
+	  sed -i 's/^#*PubkeyAuthentication.*/PubkeyAuthentication yes/' /etc/ssh/sshd_config
+	  sed -i 's/^#*PermitRootLogin.*/PermitRootLogin no/' /etc/ssh/sshd_config
+	  systemctl restart sshd
+
+	  # Установка пароля для пользователя ubuntu
+	  echo 'ubuntu:123456ubuntu' | chpasswd
+	SHELL
+end
+
+  # Настройка vm1
+  config.vm.define "vm1" do |vm1|
+    vm1.vm.hostname = "vm1"
+    vm1.vm.network "private_network", ip: nodes["vm1"]
+    
+    # Проброс порта для Xrdp
+    vm1.vm.network "forwarded_port", guest: 3389, host: 3389
+    
+    vm1.vm.provision "shell", inline: <<-SHELL
+      # Установка пакетов
+      sudo apt install -y ubuntu-desktop-minimal xrdp
+	  sudo snap install snap-store
+	  sudo snap install chromium
+	  
+	  systemctl restart irqbalance.service
+	  systemctl restart multipathd.service
+	  systemctl restart networkd-dispatcher.service
+	  systemctl restart packagekit.service
+	  systemctl restart polkit.service
+	  systemctl restart rsyslog.service
+	  systemctl restart ssh.service
+	  systemctl restart systemd-logind.service
+	  systemctl restart unattended-upgrades.service
+	  systemctl restart user@1000.service
+
+      # Настройка Xrdp
+      systemctl enable xrdp
+      systemctl start xrdp
+	  sudo /etc/init.d/xrdp restart
+
+      # Добавление записей в /etc/hosts для vm2 и vm3
+      echo "#{nodes['vm2']} vm2" >> /etc/hosts
+      echo "#{nodes['vm3']} vm3" >> /etc/hosts
+
+      # Генерация SSH ключа для пользователя ubuntu
+      sudo -u ubuntu ssh-keygen -t rsa -N "" -f /home/ubuntu/.ssh/id_rsa
+	  sudo cp /home/ubuntu/.ssh/id_rsa.pub /share
+    SHELL
+  end
+
+  config.vm.define "vm2" do |vm2|
+    vm2.vm.hostname = "vm2"
+    vm2.vm.network "private_network", ip: nodes["vm2"]
+	    
+    vm2.vm.provision "shell", inline: <<-SHELL
+      # Установка Docker
+      apt-get install -y ca-certificates curl gnupg
+      install -m 0755 -d /etc/apt/keyrings
+      curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+      chmod a+r /etc/apt/keyrings/docker.gpg
+      echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+      apt-get update -y
+      apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+      # Установка wireguard-tools
+      apt-get install -y wireguard-tools
+
+      # Установка wireguard-ui
+      mkdir -p /opt/wireguard-ui
+      cd /opt/wireguard-ui
+      wget https://github.com/ngoduykhanh/wireguard-ui/releases/download/v0.4.0/wireguard-ui-v0.4.0-linux-amd64.tar.gz
+      tar -xzf wireguard-ui-v0.4.0-linux-amd64.tar.gz
+      rm wireguard-ui-v0.4.0-linux-amd64.tar.gz
+      chmod +x wireguard-ui
+
+      # Создание сервиса для wireguard-ui
+      cat > /etc/systemd/system/wireguard-ui.service <<EOF
+[Unit]
+Description=Wireguard UI
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/wireguard-ui
+ExecStart=/opt/wireguard-ui/wireguard-ui -bind-address 0.0.0.0:5000
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+      # Создание сервиса для Wireguard
+      cat > /etc/systemd/system/wireguard.service <<EOF
+[Unit]
+Description=WireGuard
+After=network.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/bin/wg-quick up wg0
+ExecStop=/usr/bin/wg-quick down wg0
+ExecReload=/bin/bash -c '/usr/bin/wg syncconf wg0 <(/usr/bin/wg-quick strip wg0)'
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+      # Включение сервисов
+      systemctl enable wireguard-ui
+      systemctl enable wireguard
+      systemctl start wireguard-ui
+
+      # Настройка inotify для автоматического перезапуска Wireguard при изменении конфигурации
+      apt-get install -y inotify-tools
+      cat > /opt/wireguard-ui/watch-config.sh <<EOF
+#!/bin/bash
+while inotifywait -e close_write /opt/wireguard-ui/db/server/config.json; do
+  systemctl restart wireguard
+done
+EOF
+      chmod +x /opt/wireguard-ui/watch-config.sh
+
+      # Запуск скрипта наблюдения как сервиса
+      cat > /etc/systemd/system/watch-wireguard-config.service <<EOF
+[Unit]
+Description=Watch Wireguard Config Changes
+After=wireguard-ui.service
+
+[Service]
+Type=simple
+ExecStart=/opt/wireguard-ui/watch-config.sh
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+      systemctl enable watch-wireguard-config
+      systemctl start watch-wireguard-config
+
+      # Разрешение SSH для пользователя ubuntu
+      mkdir -p /home/ubuntu/.ssh
+      cat /share/id_rsa.pub >> /home/ubuntu/.ssh/authorized_keys
+      chown -R ubuntu:ubuntu /home/ubuntu/.ssh
+      chmod 700 /home/ubuntu/.ssh
+      chmod 600 /home/ubuntu/.ssh/authorized_keys
+    SHELL
+  end
+
+  # Настройка vm3
+  config.vm.define "vm3" do |vm3|
+    vm3.vm.hostname = "vm3"
+    vm3.vm.network "private_network", ip: nodes["vm3"]
+
+   
+    vm3.vm.provision "shell", inline: <<-SHELL
+      # Создание пользователя adam
+      groupadd adam
+      useradd -m -d /home/adam -s /bin/bash -g adam adam
+      usermod -aG sudo adam
+      echo "adam ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+
+      # Разрешение SSH для пользователя ubuntu
+      mkdir -p /home/ubuntu/.ssh
+      cat /share/id_rsa.pub >> /home/ubuntu/.ssh/authorized_keys
+      chown -R ubuntu:ubuntu /home/ubuntu/.ssh
+      chmod 700 /home/ubuntu/.ssh
+      chmod 600 /home/ubuntu/.ssh/authorized_keys
+    SHELL
+	end
+end

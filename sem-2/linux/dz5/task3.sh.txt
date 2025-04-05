@@ -1,0 +1,42 @@
+#!/bin/bash
+
+info() {
+  read -p "Print login:" user
+  echo "Info about $user:"
+  cat /etc/passwd | grep "$user"
+}
+
+add() {
+  read -p "Print login:" user
+  sudo useradd -m "$user"
+  echo "User $user added"
+}
+
+remove() {
+  read -p "Print login:" user
+  sudo userdel -r "$user"
+  echo "User $user removed"
+}
+
+while true; do
+  echo "Choose option:"
+  select option in "Get info" "Add user" "Remove user" "Exit"; do
+    case $option in
+      "Get info")
+        info
+        break
+        ;;
+      "Add user")
+        add
+        break
+        ;;
+      "Remove user")
+        remove
+        break
+        ;;
+      "Exit")
+        exit 0
+        ;;
+    esac
+  done
+done
