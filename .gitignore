@@ -165,3 +165,4 @@ cython_debug/
 /.idea/
 **/kaggle.json
 **/.gigaide
+**/notmy
