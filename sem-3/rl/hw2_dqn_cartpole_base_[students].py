@@ -98,8 +98,11 @@ class DQNAgent(nn.Module):
         state_dim = state_shape[0]
         ### ВАШ КОД
         self.network = nn.Sequential(
-            nn.Linear(..),
-            ...
+            nn.Linear(state_dim, 128),
+            nn.ReLU(),
+            nn.Linear(128, 64),
+            nn.ReLU(),
+            nn.Linear(64, n_actions)
         )
         ###ВАШ КОД ЗАКОНЧИЛСЯ
 
@@ -111,7 +114,7 @@ class DQNAgent(nn.Module):
         """
         # Используйте вашу сеть для вычисления q-значений для заданного состояния
         ### ВАШ КОД
-        qvalues = ...
+        qvalues = self.network(state_t)
         ###ВАШ КОД ЗАКОНЧИЛСЯ
 
         assert qvalues.requires_grad, "qvalues must be a torch tensor with grad"
@@ -130,7 +133,7 @@ class DQNAgent(nn.Module):
         model_device = next(self.parameters()).device
         states = torch.tensor(states, device=model_device, dtype=torch.float32)
         ### ВАШ КОД
-        qvalues = ...
+        qvalues = self.forward(states)
         ### ВАШ КОД ЗАКОНЧИЛСЯ
         return qvalues.data.cpu().numpy()
 
@@ -140,8 +143,11 @@ class DQNAgent(nn.Module):
         batch_size, n_actions = qvalues.shape
 
         ### ВАШ КОД
-        ...
-        return ...
+        random_actions = np.random.choice(n_actions, size=batch_size)
+        best_actions = qvalues.argmax(axis=-1)
+        should_explore = np.random.choice([0, 1], size=batch_size, p=[1-epsilon, epsilon])
+        actions = np.where(should_explore, random_actions, best_actions)
+        return actions
         ### ВАШ КОД ЗАКОНЧИЛСЯ
 
 agent = DQNAgent(state_shape, n_actions, epsilon=0.5).to(device)
@@ -271,7 +277,15 @@ def play_and_record(initial_state, agent, env, exp_replay, n_steps=1):
     # Играйте в игру в течение n_steps, как указано в инструкциях выше
     ### ВАШ КОД
     for _ in range(n_steps):
-        ...
+        qvalues = agent.get_qvalues([s])
+        action = agent.sample_actions(qvalues)[0]
+        next_s, r, terminated, truncated, _ = env.step(action)
+        sum_rewards += r
+        exp_replay.add(s, action, r, next_s, terminated or truncated)
+        if terminated or truncated:
+            s, _ = env.reset()
+        else:
+            s = next_s
     ###ВАШ КОД ЗАКОНЧИЛСЯ
 
     return sum_rewards, s
@@ -370,7 +384,7 @@ def compute_td_loss(states, actions, rewards, next_states, is_done,
 
     # вычисляем q-значения для всех действий в следующих состояниях
     ### ВАШ КОД
-    predicted_next_qvalues = ... # shape: [batch_size, n_actions]
+    predicted_next_qvalues = target_network(next_states) # shape: [batch_size, n_actions]
     ###ВАШ КОД ЗАКОНЧИЛСЯ
 
     # выбираем q-значения для выбранных действий
@@ -378,7 +392,7 @@ def compute_td_loss(states, actions, rewards, next_states, is_done,
 
     # вычисляем V*(next_states) с использованием предсказанных следующих q-значений
     ### ВАШ КОД
-    next_state_values = ...
+    next_state_values = torch.max(predicted_next_qvalues, dim=1)[0]
     ###ВАШ КОД ЗАКОНЧИЛСЯ
 
     assert next_state_values.dim() == 1 and next_state_values.shape[0] == states.shape[0], \
@@ -388,7 +402,7 @@ def compute_td_loss(states, actions, rewards, next_states, is_done,
     # для последнего состояния используем упрощенную формулу: Q(s,a) = r(s,a), так как s' не существует
     # вы можете умножить значения следующего состояния на is_not_done, чтобы добиться этого.
     ### ВАШ КОД
-    target_qvalues_for_actions = ...
+    target_qvalues_for_actions = rewards + gamma * next_state_values * is_not_done
     ###ВАШ КОД ЗАКОНЧИЛСЯ
 
     # среднеквадратичная ошибка потерь для минимизации
@@ -525,11 +539,11 @@ with trange(step, total_steps + 1) as progress_bar:
 
         # обучаемся
         ### ВАШ КОД: возьмите сэмпл размера batch_size из буфера опыта
-        obs_batch, act_batch, reward_batch, next_obs_batch, is_done_batch =...
+        obs_batch, act_batch, reward_batch, next_obs_batch, is_done_batch = exp_replay.sample(batch_size)
         ###ВАШ КОД ЗАКОНЧИЛСЯ
 
         ### ВАШ КОД: вычислите TD-потери
-        loss = ...
+        loss = compute_td_loss(obs_batch, act_batch, reward_batch, next_obs_batch, is_done_batch, agent, target_network)
         ###ВАШ КОД ЗАКОНЧИЛСЯ
 
         loss.backward()
@@ -544,7 +558,7 @@ with trange(step, total_steps + 1) as progress_bar:
         if step % refresh_target_network_freq == 0:
             # Загрузите веса агента в целевую сеть
             ### ВАШ КОД
-            ...
+            target_network.load_state_dict(agent.state_dict())
             ###ВАШ КОД ЗАКОНЧИЛСЯ
 
         if step % eval_freq == 0:
@@ -613,7 +627,12 @@ def get_discounted_returns(rewards, gamma) -> list[float]:
     G[t] = r[t] + gamma * G[t + 1]
     """
 ### ВАШ КОД
-    ...
+    returns = []
+    G = 0.0
+    for r in reversed(rewards):
+        G = r + gamma * G
+        returns.append(G)
+    returns = returns[::-1]  # Reverse the list to match original order
     return returns
 ###ВАШ КОД ЗАКОНЧИЛСЯ
 
@@ -646,22 +665,26 @@ import numpy as np
 class DuelingDQNHead(nn.Module):
     def __init__(self, input_dim, n_actions):
         super(DuelingDQNHead, self).__init__()
-        ### ВАШ КОД
         # advantage_stream: линейный слой -> ReLU -> линейный слой -> n_actions
         # value_stream: линейный слой -> ReLU -> линейный слой -> 1
         self.advantage_stream = nn.Sequential(
-            ...
+            nn.Linear(input_dim, 256),
+            nn.ReLU(),
+            nn.Linear(256, n_actions)
         )
         self.value_stream = nn.Sequential(
-            ...
+            nn.Linear(input_dim, 256),
+            nn.ReLU(),
+            nn.Linear(256, 1)
         )
-        ###ВАШ КОД ЗАКОНЧИЛСЯ
 
     def forward(self, x):
-        ### ВАШ КОД
-        ...
+        advantages = self.advantage_stream(x)
+        values = self.value_stream(x)
+        # Вычисляем Q-значения: Q(s,a) = V(s) + A(s,a) - mean(A(s,.))
+        # Это помогает избежать переоценки
+        q_values = values + (advantages - advantages.mean(dim=1, keepdim=True))
         return q_values
-###ВАШ КОД ЗАКОНЧИЛСЯ
 
 class DuelingDQN(nn.Module):
     def __init__(self, state_shape, n_actions):
@@ -670,7 +693,10 @@ class DuelingDQN(nn.Module):
         ### ВАШ КОД
         # feature_extractor: линейный -> ReLU -> линейный -> ReLU
         self.feature_extractor = nn.Sequential(
-            ...
+            nn.Linear(state_dim, 256),
+            nn.ReLU(),
+            nn.Linear(256, 192),
+            nn.ReLU()
         )
         ###ВАШ КОД ЗАКОНЧИЛСЯ
         self.dueling_head = DuelingDQNHead(192, n_actions)
@@ -689,7 +715,7 @@ class DuelingDQNAgent(nn.Module):
         assert len(state_shape) == 1
         ### ВАШ КОД
         # Используйте DuelingDQN как q_network
-        self.q_network =...
+        self.q_network = DuelingDQN(state_shape, n_actions)
         ###ВАШ КОД ЗАКОНЧИЛСЯ
 
     def forward(self, state_t):
@@ -727,8 +753,11 @@ class DuelingDQNAgent(nn.Module):
         batch_size, n_actions = qvalues.shape
 
         ### ВАШ КОД
-        ...
-        return ...
+        random_actions = np.random.choice(n_actions, size=batch_size)
+        best_actions = qvalues.argmax(axis=-1)
+        should_explore = np.random.choice([0, 1], size=batch_size, p=[1-epsilon, epsilon])
+        actions = np.where(should_explore, random_actions, best_actions)
+        return actions
         ###ВАШ КОД ЗАКОНЧИЛСЯ
 
 def compute_td_loss_double(
@@ -742,8 +771,18 @@ def compute_td_loss_double(
     gamma: float = 0.99,
     check_shapes=False,
 ):
+    # Convert numpy arrays to tensors if needed
+    states = torch.tensor(states, device=device, dtype=torch.float32) if not isinstance(states, torch.Tensor) else states
+    actions = torch.tensor(actions, device=device, dtype=torch.int64) if not isinstance(actions, torch.Tensor) else actions
+    rewards = torch.tensor(rewards, device=device, dtype=torch.float32) if not isinstance(rewards, torch.Tensor) else rewards
+    next_states = torch.tensor(next_states, device=device, dtype=torch.float32) if not isinstance(next_states, torch.Tensor) else next_states
+    is_done = torch.tensor(is_done, device=device, dtype=torch.bool) if not isinstance(is_done, torch.Tensor) else is_done
+    
     predicted_qvalues = agent(states)  # форма: [batch_size, n_actions]
     assert is_done.dtype is torch.bool
+    
+    # Вычисляем is_not_done как 1 - is_done (конвертируя boolean в float)
+    is_not_done = 1 - is_done.float()
 
     # вычисляем q-значения для всех действий в следующих состояниях
 ### ВАШ КОД
@@ -753,9 +792,9 @@ def compute_td_loss_double(
 ###ВАШ КОД ЗАКОНЧИЛСЯ
 
 ### ВАШ КОД (UPD)
-    predicted_next_qvalues_agent = ... #позволяет градиентам распространяться через ошибку выбора действия
+    predicted_next_qvalues_agent = agent(next_states) #позволяет градиентам распространяться через ошибку выбора действия
     with torch.no_grad():
-        predicted_next_qvalues_target = ...  #предотвращаеv градиенты от распространения через target_network
+        predicted_next_qvalues_target = target_network(next_states)  #предотвращаеv градиенты от распространения через target_network
 ###ВАШ КОД ЗАКОНЧИЛСЯ
 
     # выбираем q-значения для выбранных действий
@@ -765,7 +804,10 @@ def compute_td_loss_double(
 
     # вычисляем V*(next_states) используя предсказанные q-значения следующих состояний
 ### ВАШ КОД
-    next_state_values = ...
+    next_state_values = predicted_next_qvalues_target[
+        range(len(actions)), 
+        predicted_next_qvalues_agent.argmax(dim=1)
+    ]  # Double DQN: используем argmax от агента, но значения от target
 ###ВАШ КОД ЗАКОНЧИЛСЯ
 
     if check_shapes:
@@ -778,7 +820,7 @@ def compute_td_loss_double(
     # вычисляем "целевые q-значения" для ошибки - это то, что в квадратных скобках в формуле выше.
     # в последнем состоянии используем упрощенную формулу: Q(s,a) = r(s,a), так как s' не существует
 ### ВАШ КОД
-    target_qvalues_for_actions = ...
+    target_qvalues_for_actions = rewards + gamma * next_state_values * is_not_done
 ###ВАШ КОД ЗАКОНЧИЛСЯ
 
     # среднеквадратичная ошибка для минимизации
@@ -842,11 +884,11 @@ with trange(step, total_steps + 1) as progress_bar:
 
         # обучаемся
         ### ВАШ КОД: возьмите сэмпл размера batch_size из буфера опыта
-        obs_batch, act_batch, reward_batch, next_obs_batch, is_done_batch = ...
+        obs_batch, act_batch, reward_batch, next_obs_batch, is_done_batch = exp_replay.sample(batch_size)
         ###ВАШ КОД ЗАКОНЧИЛСЯ
 
         ### ВАШ КОД: вычислите TD-потери
-        loss = ...
+        loss = compute_td_loss_double(obs_batch, act_batch, reward_batch, next_obs_batch, is_done_batch, agent, target_network)
         ###ВАШ КОД ЗАКОНЧИЛСЯ
 
         loss.backward()
@@ -861,7 +903,7 @@ with trange(step, total_steps + 1) as progress_bar:
         if step % refresh_target_network_freq == 0:
             # Загрузите веса агента в целевую сеть
             ### ВАШ КОД
-            ...
+            target_network.load_state_dict(agent.state_dict())
             ###ВАШ КОД ЗАКОНЧИЛСЯ
 
         if step % eval_freq == 0:
@@ -939,4 +981,3 @@ ax.set_ylabel('Агент')
 * [Distributional RL](https://arxiv.org/abs/1707.06887) (distributional и distributed здесь означают разные вещи) (2 балла)
 * Другие модификации (2 балла в зависимости от сложности)
 """
-
