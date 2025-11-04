@@ -162,7 +162,9 @@ cython_debug/
 #.idea/
 
 **/data/**
+**/dqn/**
 /.idea/
 **/kaggle.json
 **/.gigaide
 **/notmy
+**/.setup_complete
